@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Apr  5 15:44:20 2023
 
-@author: Zuocheng
-"""
 
 import torch
 
