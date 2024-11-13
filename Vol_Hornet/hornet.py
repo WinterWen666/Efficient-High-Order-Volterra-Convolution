@@ -100,7 +100,7 @@ class gnconv(nn.Module):
 
         return x
 
-class H_order_conv(nn.Module):
+class VGC(nn.Module):
     def __init__(self, dim,order=2, groups=8, gflayer=None, h=14, w=8, s=1.0):
         super().__init__()
         self.proj_in = nn.Conv2d(dim, dim*2,1)
@@ -273,8 +273,8 @@ def hornet_tiny_7x7(pretrained=False,in_22k=False, **kwargs):
     gnconv=[
         partial(gnconv, order=2, s=s),
         partial(gnconv, order=3, s=s),
-        partial(H_order_conv, groups = 8),
-        partial(H_order_conv, groups = 8),
+        partial(VGC, groups = 8),
+        partial(VGC, groups = 8),
     ],
     **kwargs
     )
