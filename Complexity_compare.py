@@ -55,7 +55,7 @@ def PCM_creation(PM_full_r_1, PM_full_r):
 
 
 # del PM2_full, PM3_full, #PM4_full
-# @profile
+@profile
 def EVC_forward(input, B, C, L, out_cha, TPCMs_r):
     TW = []
     THR = []
@@ -77,7 +77,7 @@ def EVC_forward(input, B, C, L, out_cha, TPCMs_r):
 
 
 
-# @profile
+@profile
 def EVC_backward(gradient, TW, THR, back_shapes, TPCMs_r):
     
     for i in range(len(TPCMs_r)):
@@ -98,7 +98,7 @@ def EVC_backward(gradient, TW, THR, back_shapes, TPCMs_r):
 
 
 
-# @profile
+@profile
 def TVC_forward(input, B, C, L, out_cha,  r):
     TW = []
     THR = [] 
@@ -137,7 +137,7 @@ def Transpose_Matrix(No_conv_dims, r):
         Trans_M = []
     return Total_TM  
 
-# @profile
+@profile
 def TVC_backward(gradient, TW, THR, back_shapes, Total_TM, r):
     
     for i in range(r-1):
