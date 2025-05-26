@@ -68,7 +68,7 @@ def PCM_creation(PM_full_r_1, PM_full_r):
 
     
 # Second_GCHOC and Third_GCHOC are second order GCHOC and Third order GCHOC, respectively. Second_order_conv2d is 2d second order convolution.    
-# Concatenate can be replaced by for loop(more conv2d layers need to be definced) if memory is not enough. However, it will slow down the training.     
+# Concatenate can be replaced by for loop(more conv2d layers need to be defined) if memory is not enough. However, it will slow down the training.     
 
 class Second_GCHOC(nn.Module):
     def __init__(self, in_cha , out_cha, cha_group, kernel_size=1,stride=1,groups=1):
