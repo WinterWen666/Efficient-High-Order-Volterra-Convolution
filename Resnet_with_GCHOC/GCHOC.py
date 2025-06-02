@@ -135,7 +135,9 @@ class Second_order_conv2d(nn.Module):
         self.vol_size = kernel_size**2
         self.PCMs_r = PM_cross(2, self.vol_size)
         self.kernel_size = self.PCMs_r[0].shape[0] + 2*kernel_size**2
-        self.second_conv = nn.Conv2d(in_cha, self.out_cha, (self.kernel_size,1),bias = False)                             
+        self.in_cha = self.kernel_size*in_cha
+        self.second_conv = nn.Conv2d(self.in_cha, self.out_cha, 1,bias = False)
+                                
     def forward(self,input):
         B,ori_C,H,W = input.size()
         out_H = (H + 2*self.p - self.d*(self.k-1)-1)//self.s + 1
@@ -149,6 +151,6 @@ class Second_order_conv2d(nn.Module):
             x = x.view(B,ori_C,self.vol_size , L)
         x_cross = x[:,:,self.PCMs_r[0][:,0]]*x[:,:,self.PCMs_r[0][:,1]]
         x = torch.cat([x,x**2,x_cross], dim = 2)
+        x = x.view(B,-1,out_H, out_W)
         x = self.second_conv(x) 
-        x = x.view(B,self.out_cha, out_H, out_W)
         return x                
