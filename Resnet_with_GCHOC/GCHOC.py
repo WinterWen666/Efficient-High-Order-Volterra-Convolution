@@ -124,33 +124,48 @@ class Third_GCHOC(nn.Module):
         
         
 class Second_order_conv2d(nn.Module):
-    def __init__(self,in_cha, out_cha, kernel_size,stride, padding,  dilation=1, groups=1):
+    def __init__(self,in_cha, out_cha, kernel_size,stride=1, padding=1,  dilation=1, groups=1, H=1, W=1):
         super().__init__()
-        self.k =  kernel_size
+        self.k_h =  kernel_size
+        self.k_w =  kernel_size
+        
+        
         self.s = stride
         self.p = padding
         self.d = dilation
         self.out_cha = out_cha
-        self.unfold =nn.Unfold(kernel_size =kernel_size , dilation=dilation, padding=padding, stride=stride)
+        
+        # self.unfold =nn.Unfold(kernel_size =kernel_size , dilation=dilation, padding=padding, stride=stride)
+        self.unfold = opti_img2col(kernel_size =kernel_size , dilation=dilation, padding=padding, stride=stride)
+        # self.unfold = opti_img2col_2D(in_cha,kernel_size =kernel_size , 
+        #                               dilation=self.d, padding=self.p, stride=self.s)
         self.vol_size = kernel_size**2
         self.PCMs_r = PM_cross(2, self.vol_size)
-        self.kernel_size = self.PCMs_r[0].shape[0] + 2*kernel_size**2
+        self.kernel_size = self.PCMs_r[0].shape[0] 
+        
         self.in_cha = self.kernel_size*in_cha
         self.second_conv = nn.Conv2d(self.in_cha, self.out_cha, 1,bias = False)
-                                
+        self.linear = nn.Conv2d(in_cha, out_cha, kernel_size, stride, padding, bias = False)
+        self.identi = nn.Conv2d(in_cha, out_cha, kernel_size, stride, padding, bias = False)
+                                     
     def forward(self,input):
         B,ori_C,H,W = input.size()
-        out_H = (H + 2*self.p - self.d*(self.k-1)-1)//self.s + 1
-        out_W = (W + 2*self.p - self.d*(self.k-1)-1)//self.s + 1
-        if self.k == self.s:
+        out_H = (H + 2*self.p - self.d*(self.k_h -1)-1)//self.s + 1
+        out_W = (W + 2*self.p - self.d*(self.k_w -1)-1)//self.s + 1
+        if self.k_h == self.s and self.k_w == self.s:
             x = input.view(B,ori_C,self.s,H//self.s,self.s,W//self.s)
             x = x.transpose(3,4).view(B,ori_C,self.s**2,H//self.s*W//self.s)
-        else:    
+            
+        elif self.k_h == H and self.k_w == W:
+            x = input.view(B,ori_C,-1)
+            
+        else:
             x = self.unfold(input)
-            B,C,L = x.size()
-            x = x.view(B,ori_C,self.vol_size , L)
-        x_cross = x[:,:,self.PCMs_r[0][:,0]]*x[:,:,self.PCMs_r[0][:,1]]
-        x = torch.cat([x,x**2,x_cross], dim = 2)
+            
+            x = x.view(B,ori_C,self.vol_size , -1)
+           
+       
+        x = x[:,:,self.PCMs_r[0][:,0]]*x[:,:,self.PCMs_r[0][:,1]]
         x = x.view(B,-1,out_H, out_W)
-        x = self.second_conv(x) 
-        return x                
+        x = self.linear(input)+self.identi(input**2) +self.second_conv(x) 
+        return x  
